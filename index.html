@@ -77,9 +77,13 @@ textarea.field-input{resize:none;line-height:1.5;}
 .sig-btns{display:flex;gap:10px;margin-top:12px;}
 .sig-btn{flex:1;padding:11px;border:none;border-radius:9px;font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;cursor:pointer;}
 
-/* FOTO */
+/* ── MULTI-FOTO (Worker-Formular) ── */
 .foto-btn{width:100%;padding:13px;background:var(--bg2);border:1px dashed var(--border);border-radius:11px;color:var(--text2);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
-.foto-preview{width:100%;border-radius:11px;margin-top:8px;max-height:200px;object-fit:cover;display:none;}
+.foto-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-top:10px;}
+.foto-thumb{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:1;background:var(--bg3);}
+.foto-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.foto-thumb-del{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.7);color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}
+.foto-count-badge{background:rgba(249,115,22,.2);border:1px solid rgba(249,115,22,.4);border-radius:8px;padding:5px 11px;font-size:12px;color:var(--accent);font-weight:700;margin-top:8px;display:inline-block;}
 
 /* CHEF */
 .tabs{display:flex;overflow-x:auto;border-bottom:1px solid var(--border);background:var(--bg2);}
@@ -142,8 +146,6 @@ textarea.field-input{resize:none;line-height:1.5;}
     <div class="logo-sub">Stundenerfassung</div>
   </div>
   <div class="login-card fade-up">
-
-    <!-- Mitarbeiter -->
     <div class="section-lbl">👷 Mitarbeiter-Login</div>
     <label class="field-label">Name auswählen</label>
     <select class="login-input" id="login-name">
@@ -153,10 +155,7 @@ textarea.field-input{resize:none;line-height:1.5;}
     <input class="login-input" type="password" id="login-pw" placeholder="Passwort eingeben"/>
     <div class="login-err" id="ma-err">❌ Name oder Passwort falsch</div>
     <button class="btn-primary" onclick="loginMitarbeiter()">Einloggen →</button>
-
     <hr class="divider"/>
-
-    <!-- Chef -->
     <div class="section-lbl">🔐 Chef-Zugang</div>
     <input class="login-input" type="password" id="pin-input" placeholder="Chef-PIN eingeben" inputmode="numeric" maxlength="8"/>
     <div class="login-err" id="pin-err">❌ Falscher PIN</div>
@@ -174,10 +173,13 @@ textarea.field-input{resize:none;line-height:1.5;}
     </div>
   </div>
   <div class="content">
+
     <div class="field">
       <label class="field-lbl">📅 Datum</label>
       <input type="date" class="field-input" id="f-datum"/>
     </div>
+
+    <!-- Baustelle mit + Button -->
     <div class="field">
       <label class="field-lbl">🏗️ Baustelle</label>
       <div style="display:flex;gap:8px;">
@@ -187,15 +189,18 @@ textarea.field-input{resize:none;line-height:1.5;}
       <div id="new-bau-wrap" style="display:none;margin-top:8px;">
         <input class="field-input" id="new-bau-worker" placeholder="Neue Baustelle eingeben..." style="margin-bottom:8px;"/>
         <div style="display:flex;gap:8px;">
-          <button onclick="addBauFromWorker()" style="flex:1;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;">Hinzufügen</button>
+          <button onclick="addBauFromWorker()" style="flex:1;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;">✅ Hinzufügen & Speichern</button>
           <button onclick="hideNewBauField()" style="padding:11px 16px;background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:10px;font-weight:700;cursor:pointer;">✕</button>
         </div>
+        <p style="color:var(--text2);font-size:11px;margin-top:6px;">📌 Die Baustelle wird dauerhaft gespeichert und ist für alle sichtbar.</p>
       </div>
     </div>
+
     <div class="field">
       <label class="field-lbl">🚐 Fahrzeug</label>
       <select class="field-input" id="f-fahrzeug"><option value="">– auswählen –</option></select>
     </div>
+
     <div class="row3" style="margin-bottom:16px;">
       <div class="field" style="margin:0">
         <label class="field-lbl">🕐 Von</label>
@@ -216,22 +221,28 @@ textarea.field-input{resize:none;line-height:1.5;}
         </select>
       </div>
     </div>
+
     <div class="stunden-box">
       <div><div class="stunden-lbl">Arbeitszeit heute</div></div>
       <div class="stunden-val" id="h-display">8.50 h</div>
     </div>
+
     <div class="field">
       <label class="field-lbl">📝 Notizen / Bemerkungen</label>
       <textarea class="field-input" id="f-notizen" rows="3" placeholder="Tätigkeiten, Materialien, Besonderheiten..."></textarea>
     </div>
+
+    <!-- ── MEHRERE FOTOS ── -->
     <div class="field">
-      <label class="field-lbl">📷 Foto von der Baustelle</label>
-      <input type="file" id="foto-input" accept="image/*" capture="environment" style="display:none" onchange="handleFoto(this)"/>
+      <label class="field-lbl">📷 Fotos von der Baustelle</label>
+      <input type="file" id="foto-input" accept="image/*" multiple style="display:none" onchange="handleFotos(this)"/>
       <button class="foto-btn" onclick="document.getElementById('foto-input').click()">
-        <span>📷</span><span id="foto-lbl">Foto aufnehmen</span>
+        <span>📷</span><span id="foto-lbl">Fotos hinzufügen (mehrere möglich)</span>
       </button>
-      <img id="foto-prev" class="foto-preview"/>
+      <div id="foto-grid-worker" class="foto-grid"></div>
+      <div id="foto-count-worker" style="display:none;" class="foto-count-badge"></div>
     </div>
+
     <div class="field">
       <label class="field-lbl">✍️ Unterschrift</label>
       <div id="sig-prev-wrap" style="display:none;">
@@ -242,6 +253,7 @@ textarea.field-input{resize:none;line-height:1.5;}
         <span>✍️</span><span>Unterschrift hinzufügen</span>
       </button>
     </div>
+
     <button class="submit-btn" onclick="submitEintrag()">EINTRAG SPEICHERN →</button>
     <div style="height:36px;"></div>
   </div>
@@ -291,34 +303,42 @@ textarea.field-input{resize:none;line-height:1.5;}
   </div>
 
   <div id="tab-eintraege" class="content hidden"><div id="all-list"></div></div>
-
   <div id="tab-statistik" class="content hidden"><div id="ma-stats"></div></div>
 
+  <!-- ── VERWALTUNG (Chef) ── -->
   <div id="tab-verwaltung" class="content hidden">
+
+    <!-- Mitarbeiter -->
     <div class="verw-section">
-      <div class="verw-head">👷 Mitarbeiter</div>
+      <div class="verw-head">👷 Mitarbeiter verwalten</div>
       <div id="v-ma-list"></div>
       <div class="add-row">
         <input class="add-input" id="new-ma" placeholder="Name eingeben..."/>
         <button class="add-confirm" onclick="addItem('ma')">+ Hinzufügen</button>
       </div>
     </div>
+
+    <!-- Baustellen -->
     <div class="verw-section">
-      <div class="verw-head">🏗️ Baustellen</div>
+      <div class="verw-head">🏗️ Baustellen verwalten</div>
       <div id="v-bau-list"></div>
       <div class="add-row">
         <input class="add-input" id="new-bau" placeholder="Baustelle eingeben..."/>
         <button class="add-confirm" onclick="addItem('bau')">+ Hinzufügen</button>
       </div>
     </div>
+
+    <!-- Fahrzeuge -->
     <div class="verw-section">
-      <div class="verw-head">🚐 Fahrzeuge</div>
+      <div class="verw-head">🚐 Fahrzeuge verwalten</div>
       <div id="v-fzg-list"></div>
       <div class="add-row">
         <input class="add-input" id="new-fzg" placeholder="Fahrzeug eingeben..."/>
         <button class="add-confirm" onclick="addItem('fzg')">+ Hinzufügen</button>
       </div>
     </div>
+
+    <!-- Passwort -->
     <div class="verw-section">
       <div class="verw-head">🔑 Mitarbeiter-Passwort ändern</div>
       <div style="padding:14px 16px;">
@@ -327,6 +347,8 @@ textarea.field-input{resize:none;line-height:1.5;}
         <button class="add-confirm" style="width:100%;" onclick="changeMaPw()">Passwort speichern</button>
       </div>
     </div>
+
+    <!-- Chef PIN -->
     <div class="verw-section">
       <div class="verw-head">🔐 Chef-PIN ändern</div>
       <div style="padding:14px 16px;">
@@ -336,11 +358,13 @@ textarea.field-input{resize:none;line-height:1.5;}
     </div>
   </div>
 
+  <!-- Fotos Tab -->
   <div id="tab-fotos" class="content hidden">
-    <p style="color:var(--text2);font-size:13px;margin-bottom:16px;">Für jede Baustelle eigene Fotos hochladen & herunterladen.</p>
+    <p style="color:var(--text2);font-size:13px;margin-bottom:16px;">Für jede Baustelle eigene Fotos hochladen &amp; herunterladen.</p>
     <div id="fotos-baustellen-list"></div>
   </div>
 
+  <!-- Export Tab -->
   <div id="tab-export" class="content hidden">
     <p style="color:var(--text2);font-size:13px;margin-bottom:16px;">Alle (gefilterten) Einträge exportieren:</p>
     <button class="export-btn" onclick="exportCSV()">📊 CSV exportieren (in Excel öffnen)</button>
@@ -388,7 +412,9 @@ const getMaPw = () => localStorage.getItem(K.mapw) || DEF.mapw;
 
 // ── STATE ─────────────────────────────────────────────────
 let currentUser = '';
-let sigData = '', fotoData = '', sigDrawing = false, sigCtx = null;
+let sigData = '';
+let fotoDaten = []; // Array von { name, data }
+let sigDrawing = false, sigCtx = null;
 
 // ── UTIL ──────────────────────────────────────────────────
 const today  = () => new Date().toISOString().slice(0,10);
@@ -464,14 +490,14 @@ function showWorker() {
   };
   fillSel('f-baustelle', getBAU());
   fillSel('f-fahrzeug',  getFZG());
-  document.getElementById('f-datum').value  = today();
-  document.getElementById('f-von').value    = '07:00';
-  document.getElementById('f-bis').value    = '16:00';
-  document.getElementById('f-pause').value  = '30';
+  document.getElementById('f-datum').value   = today();
+  document.getElementById('f-von').value     = '07:00';
+  document.getElementById('f-bis').value     = '16:00';
+  document.getElementById('f-pause').value   = '30';
   document.getElementById('f-notizen').value = '';
-  document.getElementById('foto-prev').style.display = 'none';
-  document.getElementById('foto-lbl').textContent = 'Foto aufnehmen';
-  fotoData = ''; clearSig(); updH();
+  resetFotos();
+  clearSig();
+  updH();
 }
 
 function showChef() {
@@ -485,28 +511,30 @@ function showChef() {
 // WORKER FORM
 // ══════════════════════════════════════════════════════════
 function showNewBauField() {
-  const w = document.getElementById('new-bau-wrap');
-  w.style.display = 'block';
+  document.getElementById('new-bau-wrap').style.display = 'block';
   document.getElementById('new-bau-worker').focus();
 }
 function hideNewBauField() {
   document.getElementById('new-bau-wrap').style.display = 'none';
   document.getElementById('new-bau-worker').value = '';
 }
+
+// Baustelle hinzufügen – wird dauerhaft gespeichert
 function addBauFromWorker() {
   const val = document.getElementById('new-bau-worker').value.trim();
   if (!val) { toast('⚠️ Bitte einen Namen eingeben'); return; }
   const arr = getBAU();
   if (arr.includes(val)) { toast('⚠️ Baustelle existiert bereits'); return; }
-  arr.push(val); sj(K.bau, arr);
-  // Refresh dropdown and select new entry
+  arr.push(val);
+  sj(K.bau, arr);
+  // Dropdown neu befüllen und neue Baustelle selektieren
   const sel = document.getElementById('f-baustelle');
   sel.innerHTML = '<option value="">– auswählen –</option>';
   arr.forEach(i => sel.innerHTML += `<option value="${i}"${i===val?' selected':''}>${i}</option>`);
   hideNewBauField();
-  toast('✅ Baustelle "' + val + '" hinzugefügt');
+  toast('✅ Baustelle "' + val + '" gespeichert');
 }
-document.getElementById('new-bau-worker')?.addEventListener('keydown', e => { if(e.key==='Enter') addBauFromWorker(); });
+document.getElementById('new-bau-worker').addEventListener('keydown', e => { if(e.key==='Enter') addBauFromWorker(); });
 
 function updH() {
   document.getElementById('h-display').textContent =
@@ -515,16 +543,55 @@ function updH() {
           document.getElementById('f-pause').value) + ' h';
 }
 
-function handleFoto(inp) {
-  const file = inp.files[0]; if(!file) return;
-  const r = new FileReader();
-  r.onload = ev => {
-    fotoData = ev.target.result;
-    document.getElementById('foto-prev').src = fotoData;
-    document.getElementById('foto-prev').style.display = 'block';
-    document.getElementById('foto-lbl').textContent = '✅ Foto vorhanden – erneut aufnehmen';
-  };
-  r.readAsDataURL(file);
+// ── MEHRERE FOTOS ─────────────────────────────────────────
+function resetFotos() {
+  fotoDaten = [];
+  document.getElementById('foto-input').value = '';
+  document.getElementById('foto-grid-worker').innerHTML = '';
+  document.getElementById('foto-count-worker').style.display = 'none';
+  document.getElementById('foto-lbl').textContent = 'Fotos hinzufügen (mehrere möglich)';
+}
+
+function handleFotos(inp) {
+  const files = Array.from(inp.files);
+  if (!files.length) return;
+  let loaded = 0;
+  files.forEach(file => {
+    const r = new FileReader();
+    r.onload = ev => {
+      fotoDaten.push({ name: file.name, data: ev.target.result });
+      loaded++;
+      if (loaded === files.length) {
+        renderWorkerFotoGrid();
+        inp.value = '';
+      }
+    };
+    r.readAsDataURL(file);
+  });
+}
+
+function renderWorkerFotoGrid() {
+  const grid = document.getElementById('foto-grid-worker');
+  const badge = document.getElementById('foto-count-worker');
+  grid.innerHTML = fotoDaten.map((f, i) => `
+    <div class="foto-thumb">
+      <img src="${f.data}" alt="${f.name}"/>
+      <button class="foto-thumb-del" onclick="removeWorkerFoto(${i})" title="Foto entfernen">✕</button>
+    </div>
+  `).join('');
+  if (fotoDaten.length > 0) {
+    badge.style.display = 'inline-block';
+    badge.textContent = `📷 ${fotoDaten.length} Foto${fotoDaten.length !== 1 ? 's' : ''} ausgewählt`;
+    document.getElementById('foto-lbl').textContent = '+ Weitere Fotos hinzufügen';
+  } else {
+    badge.style.display = 'none';
+    document.getElementById('foto-lbl').textContent = 'Fotos hinzufügen (mehrere möglich)';
+  }
+}
+
+function removeWorkerFoto(idx) {
+  fotoDaten.splice(idx, 1);
+  renderWorkerFotoGrid();
 }
 
 // ── SIGNATURE ─────────────────────────────────────────────
@@ -570,32 +637,33 @@ function submitEintrag() {
   const entry = {
     id: Date.now(), name: currentUser,
     datum: document.getElementById('f-datum').value,
-    baustelle:bau, fahrzeug:fzg, von, bis,
+    baustelle: bau, fahrzeug: fzg, von, bis,
     pause: document.getElementById('f-pause').value,
-    stunden: calcH(von,bis,document.getElementById('f-pause').value),
+    stunden: calcH(von, bis, document.getElementById('f-pause').value),
     notizen: document.getElementById('f-notizen').value,
-    unterschrift: sigData, foto: fotoData,
+    unterschrift: sigData,
+    fotos: fotoDaten.slice(), // Array mit allen Fotos
     erstellt: new Date().toISOString()
   };
   const data = getData(); data.push(entry); sj(K.data, data);
-  document.getElementById('f-baustelle').value = '';
-  document.getElementById('f-fahrzeug').value  = '';
-  document.getElementById('f-notizen').value   = '';
-  document.getElementById('f-datum').value = today();
-  document.getElementById('f-von').value  = '07:00';
-  document.getElementById('f-bis').value  = '16:00';
-  document.getElementById('f-pause').value = '30';
-  document.getElementById('foto-input').value = '';
-  document.getElementById('foto-prev').style.display = 'none';
-  document.getElementById('foto-lbl').textContent = 'Foto aufnehmen';
-  fotoData=''; clearSig(); updH();
+  // Reset
+  document.getElementById('f-baustelle').value  = '';
+  document.getElementById('f-fahrzeug').value   = '';
+  document.getElementById('f-notizen').value    = '';
+  document.getElementById('f-datum').value      = today();
+  document.getElementById('f-von').value        = '07:00';
+  document.getElementById('f-bis').value        = '16:00';
+  document.getElementById('f-pause').value      = '30';
+  resetFotos();
+  clearSig();
+  updH();
   toast('✅ Eintrag gespeichert!');
 }
 
 // ══════════════════════════════════════════════════════════
 // CHEF
 // ══════════════════════════════════════════════════════════
-function chefTab(name,btn) {
+function chefTab(name, btn) {
   ['uebersicht','eintraege','statistik','verwaltung','fotos','export'].forEach(t=>hide('tab-'+t));
   show('tab-'+name);
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
@@ -638,7 +706,6 @@ function clearFilter() {
 function renderAll() {
   populateChefFilters();
   const f = getFiltered();
-  // Stats
   const tot = f.reduce((s,e)=>s+parseFloat(e.stunden||0),0).toFixed(2);
   const clr = ['#f97316','#3b82f6','#22c55e','#a855f7'];
   const cards = [
@@ -653,7 +720,6 @@ function renderAll() {
       <div class="num" style="color:${clr[i]}">${c.n}</div>
       <div class="lbl">${c.l}</div>
     </div>`).join('');
-  // Lists
   renderList('recent-list', f.slice(0,10));
   renderList('all-list', f);
 }
@@ -661,7 +727,9 @@ function renderAll() {
 function renderList(tid, list) {
   const el = document.getElementById(tid); if(!el) return;
   if(!list.length){el.innerHTML='<div class="empty"><div class="empty-icon">📭</div><div>Keine Einträge</div></div>';return;}
-  el.innerHTML = list.map(e=>`
+  el.innerHTML = list.map(e=>{
+    const fotoCount = e.fotos ? e.fotos.length : (e.foto ? 1 : 0);
+    return `
     <div class="eintrag" onclick="openDetail(${e.id})">
       <div class="e-head">
         <div><div class="e-name">👤 ${e.name}</div><div style="color:var(--text2);font-size:12px;margin-top:2px;">${fmtD(e.datum)}</div></div>
@@ -672,9 +740,10 @@ function renderList(tid, list) {
         <span class="tag">🚐 ${e.fahrzeug}</span>
         <span class="tag orange">🕐 ${e.von}–${e.bis}</span>
         ${e.unterschrift?'<span class="tag">✍️</span>':''}
-        ${e.foto?'<span class="tag">📷</span>':''}
+        ${fotoCount>0?`<span class="tag">📷 ${fotoCount}</span>`:''}
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function openDetail(id) {
@@ -685,12 +754,53 @@ function openDetail(id) {
     ['Fahrzeug',e.fahrzeug],[`Arbeitszeit`,`${e.von} – ${e.bis} (Pause: ${e.pause} min)`],
     ['Stunden',`${e.stunden} h`],['Notizen',e.notizen||'–']
   ].map(([k,v])=>`<div class="detail-row"><span class="detail-key">${k}</span><span class="detail-val">${v}</span></div>`).join('');
+
   if(e.unterschrift) html+=`<div style="margin-top:14px;"><div style="color:var(--text2);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">✍️ Unterschrift</div><img src="${e.unterschrift}" style="width:100%;border-radius:8px;background:#fff;padding:6px;max-height:100px;object-fit:contain;"/></div>`;
-  if(e.foto) html+=`<div style="margin-top:14px;"><div style="color:var(--text2);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">📷 Foto</div><img src="${e.foto}" style="width:100%;border-radius:10px;max-height:220px;object-fit:cover;"/></div>`;
+
+  // Mehrere Fotos anzeigen
+  const fotos = e.fotos && e.fotos.length ? e.fotos : (e.foto ? [{name:'foto',data:e.foto}] : []);
+  if(fotos.length) {
+    html += `<div style="margin-top:14px;">
+      <div style="color:var(--text2);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">📷 Fotos (${fotos.length})</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;">
+        ${fotos.map((f,i)=>`
+          <div style="border-radius:10px;overflow:hidden;aspect-ratio:1;background:var(--bg3);cursor:pointer;" onclick="previewDetailFoto(${e.id},${i})">
+            <img src="${f.data}" style="width:100%;height:100%;object-fit:cover;display:block;"/>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }
+
   html+=`<button onclick="deleteEntry(${e.id})" style="margin-top:16px;width:100%;background:#7f1d1d;color:#fee2e2;border:none;border-radius:9px;padding:11px;font-weight:700;cursor:pointer;font-size:14px;">🗑️ Eintrag löschen</button>`;
   document.getElementById('modal-body').innerHTML = html;
   show('detail-modal');
 }
+
+function previewDetailFoto(entryId, fotoIdx) {
+  const e = getData().find(x=>x.id===entryId); if(!e) return;
+  const fotos = e.fotos && e.fotos.length ? e.fotos : (e.foto ? [{name:'foto',data:e.foto}] : []);
+  const f = fotos[fotoIdx]; if(!f) return;
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;';
+  overlay.innerHTML = `
+    <img src="${f.data}" style="max-width:100%;max-height:78vh;border-radius:12px;object-fit:contain;"/>
+    <div style="color:#fff;font-size:13px;margin-top:10px;">${f.name} (${fotoIdx+1}/${fotos.length})</div>
+    <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;justify-content:center;">
+      ${fotoIdx>0?`<button onclick="navigateDetailFoto(${entryId},${fotoIdx-1},this)" style="padding:10px 16px;background:var(--bg3);color:#fff;border:1px solid var(--border);border-radius:9px;font-weight:700;cursor:pointer;">← Zurück</button>`:''}
+      ${fotoIdx<fotos.length-1?`<button onclick="navigateDetailFoto(${entryId},${fotoIdx+1},this)" style="padding:10px 16px;background:var(--bg3);color:#fff;border:1px solid var(--border);border-radius:9px;font-weight:700;cursor:pointer;">Weiter →</button>`:''}
+      <button onclick="const a=document.createElement('a');a.href='${f.data}';a.download='${f.name}';a.click();" style="padding:10px 16px;background:var(--accent);color:#fff;border:none;border-radius:9px;font-weight:700;cursor:pointer;">📥 Download</button>
+      <button onclick="this.closest('div[style*=fixed]').remove()" style="padding:10px 16px;background:var(--bg3);color:#fff;border:1px solid var(--border);border-radius:9px;font-weight:700;cursor:pointer;">✕ Schließen</button>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', ev => { if(ev.target===overlay) overlay.remove(); });
+}
+
+function navigateDetailFoto(entryId, newIdx, btn) {
+  const overlay = btn.closest('div[style*=fixed]');
+  overlay.remove();
+  previewDetailFoto(entryId, newIdx);
+}
+
 function closeModal() { hide('detail-modal'); }
 function deleteEntry(id) {
   if(!confirm('Eintrag wirklich löschen?')) return;
@@ -719,62 +829,87 @@ function renderMAStats() {
     }).join('');
 }
 
+// ── VERWALTUNG ────────────────────────────────────────────
 function renderVerwaltung() {
   const rend=(lid,items,type)=>{
-    document.getElementById(lid).innerHTML=items.map((item,i)=>
-      `<div class="verw-item"><span>${item}</span><button class="del-btn" onclick="delItem('${type}',${i})">Löschen</button></div>`
-    ).join('')||'<div style="padding:12px 16px;color:var(--text2);font-size:13px;">Keine Einträge</div>';
+    document.getElementById(lid).innerHTML=items.length
+      ? items.map((item,i)=>
+          `<div class="verw-item">
+            <span>${item}</span>
+            <button class="del-btn" onclick="delItem('${type}',${i})">Löschen</button>
+          </div>`
+        ).join('')
+      : '<div style="padding:12px 16px;color:var(--text2);font-size:13px;">Keine Einträge</div>';
   };
-  rend('v-ma-list', getMA(),  'ma');
-  rend('v-bau-list',getBAU(), 'bau');
-  rend('v-fzg-list',getFZG(), 'fzg');
+  rend('v-ma-list',  getMA(),  'ma');
+  rend('v-bau-list', getBAU(), 'bau');
+  rend('v-fzg-list', getFZG(), 'fzg');
   document.getElementById('pw-display').textContent = getMaPw();
 }
 
 function addItem(type) {
-  const ids={ma:'new-ma',bau:'new-bau',fzg:'new-fzg'};
-  const keys={ma:K.ma,bau:K.bau,fzg:K.fzg};
-  const gets={ma:getMA,bau:getBAU,fzg:getFZG};
-  const val=document.getElementById(ids[type]).value.trim(); if(!val)return;
-  const arr=gets[type](); arr.push(val); sj(keys[type],arr);
-  document.getElementById(ids[type]).value='';
-  renderVerwaltung(); toast('✅ Hinzugefügt');
+  const ids  = {ma:'new-ma', bau:'new-bau', fzg:'new-fzg'};
+  const keys = {ma:K.ma, bau:K.bau, fzg:K.fzg};
+  const gets = {ma:getMA, bau:getBAU, fzg:getFZG};
+  const labels = {ma:'Mitarbeiter', bau:'Baustelle', fzg:'Fahrzeug'};
+  const val = document.getElementById(ids[type]).value.trim();
+  if (!val) { toast('⚠️ Bitte einen Namen eingeben'); return; }
+  const arr = gets[type]();
+  if (arr.includes(val)) { toast(`⚠️ ${labels[type]} existiert bereits`); return; }
+  arr.push(val);
+  sj(keys[type], arr);
+  document.getElementById(ids[type]).value = '';
+  renderVerwaltung();
   populateLoginDrop();
+  toast(`✅ ${labels[type]} "${val}" hinzugefügt`);
 }
 
-function delItem(type,idx) {
-  const keys={ma:K.ma,bau:K.bau,fzg:K.fzg};
-  const gets={ma:getMA,bau:getBAU,fzg:getFZG};
-  const arr=gets[type](); arr.splice(idx,1); sj(keys[type],arr);
-  renderVerwaltung(); populateLoginDrop();
+function delItem(type, idx) {
+  const keys = {ma:K.ma, bau:K.bau, fzg:K.fzg};
+  const gets = {ma:getMA, bau:getBAU, fzg:getFZG};
+  const labels = {ma:'Mitarbeiter', bau:'Baustelle', fzg:'Fahrzeug'};
+  const arr = gets[type]();
+  const name = arr[idx];
+  if (!confirm(`"${name}" wirklich aus der ${labels[type]}-Liste löschen?`)) return;
+  arr.splice(idx, 1);
+  sj(keys[type], arr);
+  renderVerwaltung();
+  populateLoginDrop();
+  toast(`🗑️ "${name}" gelöscht`);
 }
 
 function changeMaPw() {
-  const pw=document.getElementById('new-ma-pw').value.trim(); if(!pw)return;
-  localStorage.setItem(K.mapw,pw);
-  document.getElementById('new-ma-pw').value='';
-  renderVerwaltung(); toast('✅ Mitarbeiter-Passwort gespeichert');
+  const pw = document.getElementById('new-ma-pw').value.trim();
+  if (!pw) { toast('⚠️ Bitte ein Passwort eingeben'); return; }
+  localStorage.setItem(K.mapw, pw);
+  document.getElementById('new-ma-pw').value = '';
+  renderVerwaltung();
+  toast('✅ Mitarbeiter-Passwort gespeichert');
 }
 
 function changePin() {
-  const p=document.getElementById('new-pin').value.trim();
-  if(!p||p.length<4){toast('⚠️ PIN mind. 4 Stellen'); return;}
-  localStorage.setItem(K.pin,p);
-  document.getElementById('new-pin').value='';
+  const p = document.getElementById('new-pin').value.trim();
+  if (!p || p.length < 4) { toast('⚠️ PIN mind. 4 Stellen'); return; }
+  localStorage.setItem(K.pin, p);
+  document.getElementById('new-pin').value = '';
   toast('✅ Chef-PIN gespeichert');
 }
 
 // ══════════════════════════════════════════════════════════
-// BAUSTELLEN FOTOS
+// BAUSTELLEN FOTOS (Chef-Tab)
 // ══════════════════════════════════════════════════════════
 const K_FOTOS = 'mowark_bau_fotos';
-const getBauFotos = () => gj(K_FOTOS) || {};
-const saveBauFotos = d => sj(K_FOTOS, d);
+const getBauFotos  = () => gj(K_FOTOS) || {};
+const saveBauFotos = d  => sj(K_FOTOS, d);
 
 function renderFotos() {
   const baustellen = getBAU();
   const allFotos = getBauFotos();
   const el = document.getElementById('fotos-baustellen-list');
+  if (!baustellen.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">🏗️</div><div>Keine Baustellen vorhanden.<br>Zuerst Baustellen in der Verwaltung anlegen.</div></div>';
+    return;
+  }
   el.innerHTML = baustellen.map(bau => {
     const fotos = allFotos[bau] || [];
     const bauId = bau.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'');
@@ -785,18 +920,16 @@ function renderFotos() {
         <span style="color:var(--text2);font-size:12px;font-weight:500;">${fotos.length} Foto${fotos.length!==1?'s':''}</span>
       </div>
       <div style="padding:14px 16px;">
-        <!-- Upload Button -->
         <input type="file" id="foto-upload-${bauId}" accept="image/*" multiple style="display:none" onchange="uploadBauFoto(this,'${bau}')"/>
         <button onclick="document.getElementById('foto-upload-${bauId}').click()"
           style="width:100%;padding:12px;background:var(--bg3);border:1px dashed var(--accent);border-radius:10px;color:var(--accent);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:${fotos.length?'14px':'0'};">
-          + Fotos hochladen
+          + Fotos hochladen (mehrere möglich)
         </button>
-        <!-- Foto Grid -->
         ${fotos.length ? `
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;">
           ${fotos.map((f,i) => `
             <div style="position:relative;border-radius:10px;overflow:hidden;aspect-ratio:1;background:var(--bg3);">
-              <img src="${f.data}" style="width:100%;height:100%;object-fit:cover;display:block;" onclick="previewFoto('${bau}',${i})"/>
+              <img src="${f.data}" style="width:100%;height:100%;object-fit:cover;display:block;cursor:pointer;" onclick="previewFoto('${bau}',${i})"/>
               <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.6);padding:3px 6px;">
                 <div style="font-size:9px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${f.name}</div>
               </div>
@@ -846,9 +979,7 @@ function downloadAllFotos(bau) {
   fotos.forEach((f, i) => {
     setTimeout(() => {
       const a = document.createElement('a');
-      a.href = f.data;
-      a.download = `${bau}_${i+1}_${f.name}`;
-      a.click();
+      a.href = f.data; a.download = `${bau}_${i+1}_${f.name}`; a.click();
     }, i * 300);
   });
   toast(`📥 ${fotos.length} Foto${fotos.length!==1?'s':''} werden heruntergeladen...`);
@@ -863,21 +994,28 @@ function deleteAllBauFotos(bau) {
   toast('🗑️ Fotos gelöscht');
 }
 
-// Foto Vorschau Modal
 function previewFoto(bau, idx) {
   const foto = (getBauFotos()[bau] || [])[idx]; if(!foto) return;
+  const fotos = getBauFotos()[bau] || [];
   const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;';
   overlay.innerHTML = `
     <img src="${foto.data}" style="max-width:100%;max-height:75vh;border-radius:12px;object-fit:contain;"/>
-    <div style="color:#fff;font-size:13px;margin-top:10px;text-align:center;">${foto.name}</div>
-    <div style="display:flex;gap:10px;margin-top:16px;">
-      <button onclick="this.closest('div[style]').remove()" style="padding:11px 20px;background:var(--bg3);color:#fff;border:1px solid var(--border);border-radius:9px;font-weight:700;cursor:pointer;">✕ Schließen</button>
-      <button onclick="const a=document.createElement('a');a.href='${foto.data}';a.download='${foto.name}';a.click();" style="padding:11px 20px;background:var(--accent);color:#fff;border:none;border-radius:9px;font-weight:700;cursor:pointer;">📥 Herunterladen</button>
-      <button onclick="deleteSingleFoto('${bau}',${idx},this.closest('div[style]'))" style="padding:11px 20px;background:#7f1d1d;color:#fee2e2;border:none;border-radius:9px;font-weight:700;cursor:pointer;">🗑️ Löschen</button>
+    <div style="color:#fff;font-size:13px;margin-top:10px;text-align:center;">${foto.name} (${idx+1}/${fotos.length})</div>
+    <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;justify-content:center;">
+      ${idx>0?`<button onclick="navigateBauFoto('${bau}',${idx-1},this)" style="padding:11px 16px;background:var(--bg3);color:#fff;border:1px solid var(--border);border-radius:9px;font-weight:700;cursor:pointer;">← Zurück</button>`:''}
+      ${idx<fotos.length-1?`<button onclick="navigateBauFoto('${bau}',${idx+1},this)" style="padding:11px 16px;background:var(--bg3);color:#fff;border:1px solid var(--border);border-radius:9px;font-weight:700;cursor:pointer;">Weiter →</button>`:''}
+      <button onclick="this.closest('div[style*=fixed]').remove()" style="padding:11px 16px;background:var(--bg3);color:#fff;border:1px solid var(--border);border-radius:9px;font-weight:700;cursor:pointer;">✕ Schließen</button>
+      <button onclick="const a=document.createElement('a');a.href='${foto.data}';a.download='${foto.name}';a.click();" style="padding:11px 16px;background:var(--accent);color:#fff;border:none;border-radius:9px;font-weight:700;cursor:pointer;">📥 Herunterladen</button>
+      <button onclick="deleteSingleFoto('${bau}',${idx},this.closest('div[style*=fixed]'))" style="padding:11px 16px;background:#7f1d1d;color:#fee2e2;border:none;border-radius:9px;font-weight:700;cursor:pointer;">🗑️ Löschen</button>
     </div>`;
   document.body.appendChild(overlay);
   overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
+}
+
+function navigateBauFoto(bau, newIdx, btn) {
+  btn.closest('div[style*=fixed]').remove();
+  previewFoto(bau, newIdx);
 }
 
 function deleteSingleFoto(bau, idx, overlay) {
@@ -890,10 +1028,14 @@ function deleteSingleFoto(bau, idx, overlay) {
   toast('🗑️ Foto gelöscht');
 }
 
+// ── EXPORT ────────────────────────────────────────────────
 function exportCSV() {
   const list=getFiltered();
-  const rows=[['Name','Datum','Baustelle','Fahrzeug','Von','Bis','Pause (min)','Stunden','Notizen']];
-  list.forEach(e=>rows.push([e.name,e.datum,e.baustelle,e.fahrzeug,e.von,e.bis,e.pause,e.stunden,(e.notizen||'').replace(/\n/g,' ')]));
+  const rows=[['Name','Datum','Baustelle','Fahrzeug','Von','Bis','Pause (min)','Stunden','Fotos','Notizen']];
+  list.forEach(e=>{
+    const fotoCount = e.fotos ? e.fotos.length : (e.foto ? 1 : 0);
+    rows.push([e.name,e.datum,e.baustelle,e.fahrzeug,e.von,e.bis,e.pause,e.stunden,fotoCount,(e.notizen||'').replace(/\n/g,' ')]);
+  });
   const csv=rows.map(r=>r.map(c=>`"${c}"`).join(';')).join('\n');
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
